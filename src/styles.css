@@ -147,8 +147,10 @@
   animation: float-y 6s ease-in-out infinite;
 }
 @utility marquee-track {
-  animation: marquee 30s linear infinite;
+  animation: marquee 45s linear infinite;
+  will-change: transform;
 }
+
 @utility gradient-animated {
   background-size: 200% 200%;
   animation: gradient-shift 8s ease infinite;
