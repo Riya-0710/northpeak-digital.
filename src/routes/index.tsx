@@ -161,8 +161,14 @@ function MoonIcon() {
 function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
-      <div aria-hidden className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-[var(--peak)]/20 blur-3xl float-slow" />
-      <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl float-slow" style={{ animationDelay: "2s" }} />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(600px 400px at 85% 10%, color-mix(in oklab, var(--peak) 18%, transparent), transparent 60%), radial-gradient(500px 380px at 10% 90%, color-mix(in oklab, var(--primary) 18%, transparent), transparent 60%)",
+        }}
+      />
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.2fr_1fr] lg:py-32">
         <div>
           <p data-reveal className="reveal mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -171,7 +177,7 @@ function Hero() {
           </p>
           <h1 data-reveal className="reveal font-display text-5xl leading-[1.02] sm:text-6xl lg:text-7xl" style={{ transitionDelay: "80ms" }}>
             Websites built to{" "}
-            <em className="bg-gradient-to-r from-[var(--peak)] via-primary to-[var(--peak)] bg-clip-text not-italic text-transparent gradient-animated">
+            <em className="bg-gradient-to-r from-[var(--peak)] via-primary to-[var(--peak)] bg-clip-text not-italic text-transparent">
               reach the summit
             </em>{" "}
             of your category.
@@ -190,8 +196,8 @@ function Hero() {
           </dl>
         </div>
         <div data-reveal aria-hidden className="reveal-right relative hidden lg:block">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--accent)] via-surface to-secondary gradient-animated" />
-          <svg viewBox="0 0 400 500" className="relative h-full w-full float-slow">
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--accent)] via-surface to-secondary" />
+          <svg viewBox="0 0 400 500" className="relative h-full w-full">
             <defs>
               <linearGradient id="pk" x1="0" x2="0" y1="0" y2="1">
                 <stop offset="0" stopColor="var(--primary)" />
@@ -205,6 +211,7 @@ function Hero() {
         </div>
       </div>
     </section>
+
   );
 }
 
