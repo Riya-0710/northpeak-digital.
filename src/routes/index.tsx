@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -33,65 +33,70 @@ const services = [
 ];
 
 const testimonials = [
-  {
-    q: "NorthPeak rebuilt our marketing site in six weeks. Traffic is up 40% and it finally feels like us.",
-    a: "Mara Ellison",
-    r: "Head of Marketing, Fjordline",
-  },
-  {
-    q: "The most disciplined team we have worked with. Every pixel and every millisecond had a reason.",
-    a: "Daniel Osei",
-    r: "Founder, Kithe & Co.",
-  },
-  {
-    q: "They shipped a Lighthouse 98 on a content-heavy site. Our conversions doubled the next quarter.",
-    a: "Priya Raman",
-    r: "CMO, Northwind Studio",
-  },
+  { q: "NorthPeak rebuilt our marketing site in six weeks. Traffic is up 40% and it finally feels like us.", a: "Mara Ellison", r: "Head of Marketing, Fjordline" },
+  { q: "The most disciplined team we have worked with. Every pixel and every millisecond had a reason.", a: "Daniel Osei", r: "Founder, Kithe & Co." },
+  { q: "They shipped a Lighthouse 98 on a content-heavy site. Our conversions doubled the next quarter.", a: "Priya Raman", r: "CMO, Northwind Studio" },
 ];
 
 const tiers = [
-  {
-    name: "Basecamp",
-    price: "3.2k",
-    tag: "Launch site",
-    features: ["Up to 5 pages", "Responsive build", "Basic on-page SEO", "2 rounds of revisions"],
-    highlight: false,
-  },
-  {
-    name: "Ascent",
-    price: "7.8k",
-    tag: "Most popular",
-    features: [
-      "Up to 12 pages",
-      "Custom design system",
-      "CMS + analytics setup",
-      "Performance ≥ 95",
-      "4 rounds of revisions",
-    ],
-    highlight: true,
-  },
-  {
-    name: "Summit",
-    price: "14k",
-    tag: "Full engagement",
-    features: [
-      "Unlimited pages",
-      "Brand + web system",
-      "Content strategy",
-      "3 months post-launch care",
-      "Priority support",
-    ],
-    highlight: false,
-  },
+  { name: "Basecamp", price: "3.2k", tag: "Launch site", features: ["Up to 5 pages", "Responsive build", "Basic on-page SEO", "2 rounds of revisions"], highlight: false },
+  { name: "Ascent", price: "7.8k", tag: "Most popular", features: ["Up to 12 pages", "Custom design system", "CMS + analytics setup", "Performance ≥ 95", "4 rounds of revisions"], highlight: true },
+  { name: "Summit", price: "14k", tag: "Full engagement", features: ["Unlimited pages", "Brand + web system", "Content strategy", "3 months post-launch care", "Priority support"], highlight: false },
 ];
 
+const clients = ["Fjordline", "Kithe & Co.", "Northwind", "Aster Labs", "Meridian", "Cairn", "Halcyon", "Rivet"];
+
+// ---------- Hooks ----------
+function useTheme() {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  useEffect(() => {
+    const stored = localStorage.getItem("theme");
+    const prefers = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const initial = (stored as "light" | "dark") ?? (prefers ? "dark" : "light");
+    setTheme(initial);
+    document.documentElement.classList.toggle("dark", initial === "dark");
+  }, []);
+  const toggle = () => {
+    setTheme((t) => {
+      const next = t === "dark" ? "light" : "dark";
+      document.documentElement.classList.toggle("dark", next === "dark");
+      localStorage.setItem("theme", next);
+      return next;
+    });
+  };
+  return { theme, toggle };
+}
+
+function useReveal<T extends HTMLElement>() {
+  const ref = useRef<T | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("is-visible");
+            io.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -50px 0px" },
+    );
+    el.querySelectorAll("[data-reveal]").forEach((n) => io.observe(n));
+    return () => io.disconnect();
+  }, []);
+  return ref;
+}
+
 function Index() {
+  const ref = useReveal<HTMLDivElement>();
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div ref={ref} className="min-h-screen bg-background text-foreground">
       <Header />
       <main>
         <Hero />
+        <Marquee />
         <Services />
         <Testimonials />
         <Pricing />
@@ -103,82 +108,118 @@ function Index() {
 }
 
 function Header() {
+  const { theme, toggle } = useTheme();
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
         <a href="#top" className="flex items-center gap-2 font-display text-xl">
-          <span aria-hidden className="inline-block h-2.5 w-2.5 rotate-45 bg-[var(--peak)]" />
+          <span aria-hidden className="inline-block h-2.5 w-2.5 rotate-45 bg-[var(--peak)] transition-transform hover:scale-125" />
           NorthPeak
         </a>
         <nav aria-label="Primary" className="hidden gap-8 text-sm text-muted-foreground md:flex">
-          <a href="#services" className="hover:text-foreground">Services</a>
-          <a href="#work" className="hover:text-foreground">Clients</a>
-          <a href="#pricing" className="hover:text-foreground">Pricing</a>
-          <a href="#contact" className="hover:text-foreground">Contact</a>
+          <a href="#services" className="story-link hover:text-foreground">Services</a>
+          <a href="#work" className="story-link hover:text-foreground">Clients</a>
+          <a href="#pricing" className="story-link hover:text-foreground">Pricing</a>
+          <a href="#contact" className="story-link hover:text-foreground">Contact</a>
         </nav>
-        <a
-          href="#contact"
-          className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-        >
-          Start a project
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={toggle}
+            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            className="grid h-9 w-9 place-items-center rounded-full border border-border transition hover:bg-secondary"
+          >
+            {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+          </button>
+          <a
+            href="#contact"
+            className="hidden rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90 sm:inline-block"
+          >
+            Start a project
+          </a>
+        </div>
       </div>
     </header>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </svg>
+  );
+}
+function MoonIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
   );
 }
 
 function Hero() {
   return (
     <section id="top" className="relative overflow-hidden">
+      <div aria-hidden className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-[var(--peak)]/20 blur-3xl float-slow" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-primary/20 blur-3xl float-slow" style={{ animationDelay: "2s" }} />
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1.2fr_1fr] lg:py-32">
         <div>
-          <p className="mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          <p data-reveal className="reveal mb-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
             <span className="inline-block h-px w-8 bg-[var(--peak)]" />
             Digital agency · Est. 2019
           </p>
-          <h1 className="font-display text-5xl leading-[1.02] sm:text-6xl lg:text-7xl">
-            Websites built to <em className="text-[var(--peak)] not-italic">reach the summit</em> of your category.
+          <h1 data-reveal className="reveal font-display text-5xl leading-[1.02] sm:text-6xl lg:text-7xl" style={{ transitionDelay: "80ms" }}>
+            Websites built to{" "}
+            <em className="bg-gradient-to-r from-[var(--peak)] via-primary to-[var(--peak)] bg-clip-text not-italic text-transparent gradient-animated">
+              reach the summit
+            </em>{" "}
+            of your category.
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-            NorthPeak Digital is a small studio of designers and engineers crafting fast,
-            accessible websites and brand systems for ambitious teams.
+          <p data-reveal className="reveal mt-6 max-w-xl text-lg text-muted-foreground" style={{ transitionDelay: "160ms" }}>
+            NorthPeak Digital is a small studio of designers and engineers crafting fast, accessible websites and brand systems for ambitious teams.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <a
-              href="#contact"
-              className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
-            >
-              Book a discovery call
-            </a>
-            <a
-              href="#services"
-              className="rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground transition hover:bg-secondary"
-            >
-              See what we do
-            </a>
+          <div data-reveal className="reveal mt-8 flex flex-wrap gap-3" style={{ transitionDelay: "240ms" }}>
+            <a href="#contact" className="rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 hover-lift">Book a discovery call</a>
+            <a href="#services" className="rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground transition hover:bg-secondary">See what we do</a>
           </div>
-          <dl className="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-8">
+          <dl data-reveal className="reveal mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-border pt-8" style={{ transitionDelay: "320ms" }}>
             <div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Projects</dt><dd className="mt-1 font-display text-3xl">120+</dd></div>
             <div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Avg. Lighthouse</dt><dd className="mt-1 font-display text-3xl">97</dd></div>
             <div><dt className="text-xs uppercase tracking-wider text-muted-foreground">Repeat clients</dt><dd className="mt-1 font-display text-3xl">82%</dd></div>
           </dl>
         </div>
-        <div aria-hidden className="relative hidden lg:block">
-          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--accent)] via-surface to-secondary" />
-          <svg viewBox="0 0 400 500" className="relative h-full w-full">
+        <div data-reveal aria-hidden className="reveal-right relative hidden lg:block">
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--accent)] via-surface to-secondary gradient-animated" />
+          <svg viewBox="0 0 400 500" className="relative h-full w-full float-slow">
             <defs>
               <linearGradient id="pk" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0" stopColor="oklch(0.32 0.09 255)" />
-                <stop offset="1" stopColor="oklch(0.72 0.15 55)" />
+                <stop offset="0" stopColor="var(--primary)" />
+                <stop offset="1" stopColor="var(--peak)" />
               </linearGradient>
             </defs>
             <polygon points="60,420 180,140 260,300 320,220 380,420" fill="url(#pk)" opacity="0.9" />
-            <polygon points="20,440 130,240 220,360 300,280 400,440" fill="oklch(0.32 0.09 255)" opacity="0.35" />
-            <circle cx="310" cy="90" r="28" fill="oklch(0.72 0.15 55)" />
+            <polygon points="20,440 130,240 220,360 300,280 400,440" fill="var(--primary)" opacity="0.35" />
+            <circle cx="310" cy="90" r="28" fill="var(--peak)" />
           </svg>
         </div>
       </div>
     </section>
+  );
+}
+
+function Marquee() {
+  const row = [...clients, ...clients];
+  return (
+    <div aria-label="Selected clients" className="border-y border-border overflow-hidden bg-surface py-6">
+      <div className="flex w-max marquee-track gap-16 px-8">
+        {row.map((c, i) => (
+          <span key={i} className="font-display text-2xl text-muted-foreground whitespace-nowrap">
+            {c} <span className="mx-8 text-[var(--peak)]">✦</span>
+          </span>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -188,22 +229,26 @@ function Services() {
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <div className="mb-14 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Services</p>
-            <h2 className="mt-3 font-display text-4xl sm:text-5xl">What we do, end to end.</h2>
+            <p data-reveal className="reveal text-xs uppercase tracking-[0.2em] text-muted-foreground">Services</p>
+            <h2 data-reveal className="reveal mt-3 font-display text-4xl sm:text-5xl" style={{ transitionDelay: "80ms" }}>What we do, end to end.</h2>
           </div>
-          <p className="max-w-md text-muted-foreground">
-            A tight scope, delivered with craft. We work as a single team through discovery,
-            design, build and launch.
+          <p data-reveal className="reveal max-w-md text-muted-foreground" style={{ transitionDelay: "160ms" }}>
+            A tight scope, delivered with craft. We work as a single team through discovery, design, build and launch.
           </p>
         </div>
         <ul className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((s) => (
-            <li key={s.n} className="group bg-card p-8 transition hover:bg-accent/40">
+          {services.map((s, i) => (
+            <li
+              key={s.n}
+              data-reveal
+              className="reveal group bg-card p-8 transition hover:bg-accent/40"
+              style={{ transitionDelay: `${i * 70}ms` }}
+            >
               <div className="flex items-baseline justify-between">
                 <span className="font-display text-2xl text-[var(--peak)]">{s.n}</span>
-                <span aria-hidden className="h-px w-10 bg-border transition group-hover:w-16" />
+                <span aria-hidden className="h-px w-10 bg-border transition-all duration-500 group-hover:w-20 group-hover:bg-[var(--peak)]" />
               </div>
-              <h3 className="mt-6 font-display text-2xl">{s.t}</h3>
+              <h3 className="mt-6 font-display text-2xl transition-transform duration-300 group-hover:translate-x-1">{s.t}</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{s.d}</p>
             </li>
           ))}
@@ -217,15 +262,17 @@ function Testimonials() {
   return (
     <section id="work" className="border-t border-border">
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Clients</p>
-        <h2 className="mt-3 max-w-2xl font-display text-4xl sm:text-5xl">
+        <p data-reveal className="reveal text-xs uppercase tracking-[0.2em] text-muted-foreground">Clients</p>
+        <h2 data-reveal className="reveal mt-3 max-w-2xl font-display text-4xl sm:text-5xl" style={{ transitionDelay: "80ms" }}>
           Trusted by founders, marketers and product teams.
         </h2>
         <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {testimonials.map((t) => (
+          {testimonials.map((t, i) => (
             <figure
               key={t.a}
-              className="flex flex-col justify-between rounded-2xl border border-border bg-card p-8"
+              data-reveal
+              className="reveal flex flex-col justify-between rounded-2xl border border-border bg-card p-8 hover-lift"
+              style={{ transitionDelay: `${i * 100}ms` }}
             >
               <blockquote className="font-display text-xl leading-snug">"{t.q}"</blockquote>
               <figcaption className="mt-8 border-t border-border pt-4 text-sm">
@@ -246,23 +293,24 @@ function Pricing() {
       <div className="mx-auto max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
         <div className="mb-14 flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Pricing</p>
-            <h2 className="mt-3 font-display text-4xl sm:text-5xl">Three ways to work together.</h2>
+            <p data-reveal className="reveal text-xs uppercase tracking-[0.2em] text-muted-foreground">Pricing</p>
+            <h2 data-reveal className="reveal mt-3 font-display text-4xl sm:text-5xl" style={{ transitionDelay: "80ms" }}>Three ways to work together.</h2>
           </div>
-          <p className="max-w-md text-muted-foreground">
-            Fixed-scope packages so you know what you get and what it costs. Custom retainers
-            available after launch.
+          <p data-reveal className="reveal max-w-md text-muted-foreground" style={{ transitionDelay: "160ms" }}>
+            Fixed-scope packages so you know what you get and what it costs. Custom retainers available after launch.
           </p>
         </div>
         <div className="grid gap-6 lg:grid-cols-3">
-          {tiers.map((t) => (
+          {tiers.map((t, i) => (
             <article
               key={t.name}
-              className={`relative flex flex-col rounded-2xl border p-8 ${
+              data-reveal
+              className={`reveal relative flex flex-col rounded-2xl border p-8 hover-lift ${
                 t.highlight
                   ? "border-[var(--peak)] bg-card shadow-[0_20px_60px_-30px_oklch(0.72_0.15_55/0.6)]"
                   : "border-border bg-card"
               }`}
+              style={{ transitionDelay: `${i * 100}ms` }}
             >
               {t.highlight && (
                 <span className="absolute -top-3 left-8 rounded-full bg-[var(--peak)] px-3 py-1 text-xs font-medium text-primary-foreground">
@@ -311,8 +359,7 @@ function Contact() {
     const e: Record<string, string> = {};
     if (!v.name.trim() || v.name.trim().length < 2) e.name = "Please enter your full name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email)) e.email = "Please enter a valid email address.";
-    if (!v.message.trim() || v.message.trim().length < 10)
-      e.message = "Tell us a bit more (10+ characters).";
+    if (!v.message.trim() || v.message.trim().length < 10) e.message = "Tell us a bit more (10+ characters).";
     return e;
   };
 
@@ -334,24 +381,20 @@ function Contact() {
   return (
     <section id="contact" className="border-t border-border">
       <div className="mx-auto grid max-w-6xl gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-[1fr_1.1fr]">
-        <div>
+        <div data-reveal className="reveal-left">
           <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Contact</p>
           <h2 className="mt-3 font-display text-4xl sm:text-5xl">Tell us about your project.</h2>
           <p className="mt-4 max-w-md text-muted-foreground">
-            We reply within one business day. If we are not the right fit, we will happily
-            point you to a studio that is.
+            We reply within one business day. If we are not the right fit, we will happily point you to a studio that is.
           </p>
           <dl className="mt-10 space-y-4 text-sm">
             <div><dt className="text-muted-foreground">Email</dt><dd>hello@northpeak.digital</dd></div>
             <div><dt className="text-muted-foreground">Studio</dt><dd>Oslo · Remote worldwide</dd></div>
           </dl>
         </div>
-        <form noValidate onSubmit={onSubmit} className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <form data-reveal noValidate onSubmit={onSubmit} className="reveal-right rounded-2xl border border-border bg-card p-6 sm:p-8">
           {sent && (
-            <div
-              role="status"
-              className="mb-6 rounded-lg border border-[var(--peak)]/40 bg-accent/40 px-4 py-3 text-sm"
-            >
+            <div role="status" className="mb-6 rounded-lg border border-[var(--peak)]/40 bg-accent/40 px-4 py-3 text-sm">
               Thanks — your message is on its way. We will be in touch shortly.
             </div>
           )}
@@ -410,7 +453,7 @@ function Contact() {
           </label>
           <button
             type="submit"
-            className="mt-6 w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 sm:w-auto"
+            className="mt-6 w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition hover:opacity-90 hover-lift sm:w-auto"
           >
             Send message
           </button>
@@ -436,7 +479,7 @@ function Footer() {
             href="https://digitalheroesco.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline decoration-[var(--peak)] underline-offset-4 hover:text-[var(--peak)]"
+            className="story-link underline decoration-[var(--peak)] underline-offset-4 hover:text-[var(--peak)]"
           >
             Built for Digital Heroes Training Task
           </a>
