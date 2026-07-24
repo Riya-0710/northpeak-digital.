@@ -217,9 +217,22 @@ function Hero() {
 
 function Marquee() {
   const row = [...clients, ...clients];
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        el.style.animationPlayState = entry.isIntersecting ? "running" : "paused";
+      },
+      { threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
     <div aria-label="Selected clients" className="border-y border-border overflow-hidden bg-surface py-6">
-      <div className="flex w-max marquee-track gap-16 px-8">
+      <div ref={trackRef} className="flex w-max marquee-track gap-16 px-8">
         {row.map((c, i) => (
           <span key={i} className="font-display text-2xl text-muted-foreground whitespace-nowrap">
             {c} <span className="mx-8 text-[var(--peak)]">✦</span>
@@ -229,6 +242,7 @@ function Marquee() {
     </div>
   );
 }
+
 
 function Services() {
   return (
