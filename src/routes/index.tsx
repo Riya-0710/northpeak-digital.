@@ -466,25 +466,51 @@ function Contact() {
 function Footer() {
   return (
     <footer className="border-t border-border bg-surface">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-        <div className="flex items-center gap-2 font-display text-lg">
-          <span aria-hidden className="inline-block h-2.5 w-2.5 rotate-45 bg-[var(--peak)]" />
-          NorthPeak Digital
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-10 sm:px-8">
+        <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+          <div className="flex items-center gap-2 font-display text-lg">
+            <span aria-hidden className="inline-block h-2.5 w-2.5 rotate-45 bg-[var(--peak)]" />
+            NorthPeak Digital
+          </div>
+          <p className="text-sm text-muted-foreground">
+            © {new Date().getFullYear()} NorthPeak Digital. All rights reserved.
+          </p>
         </div>
-        <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} NorthPeak Digital. All rights reserved.
-        </p>
-        <p className="text-sm">
+
+        <div className="flex flex-col items-center gap-4 border-t border-border pt-8 sm:flex-row sm:justify-center">
+          <span className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Crafted for</span>
           <a
             href="https://digitalheroesco.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="story-link underline decoration-[var(--peak)] underline-offset-4 hover:text-[var(--peak)]"
+            className="group inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground shadow-sm transition hover:border-[var(--peak)] hover:bg-accent/30 hover:text-[var(--peak)] hover-lift"
           >
-            Built for Digital Heroes Training Task
+            <span aria-hidden className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[var(--peak)]/10 text-[var(--peak)] transition group-hover:bg-[var(--peak)] group-hover:text-primary-foreground">
+              <SparkleIcon />
+            </span>
+            Digital Heroes Training Task
+            <span aria-hidden className="text-muted-foreground transition group-hover:text-[var(--peak)]">
+              <ArrowUpRightIcon />
+            </span>
           </a>
-        </p>
+        </div>
       </div>
     </footer>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M12 2L13.5 8.5L20 10L13.5 11.5L12 18L10.5 11.5L4 10L10.5 8.5L12 2Z" />
+    </svg>
+  );
+}
+
+function ArrowUpRightIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M7 17L17 7M17 7H7M17 7V17" />
+    </svg>
   );
 }
