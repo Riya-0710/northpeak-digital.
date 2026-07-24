@@ -110,7 +110,7 @@ function Index() {
 function Header() {
   const { theme, toggle } = useTheme();
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:px-8">
         <a href="#top" className="flex items-center gap-2 font-display text-xl">
           <span aria-hidden className="inline-block h-2.5 w-2.5 rotate-45 bg-[var(--peak)] transition-transform hover:scale-125" />
